@@ -1,5 +1,5 @@
 # Microtiter Plate Analysis Toolkit
-[Static Badge]([https://img.shields.io/badge/status-under_development-blue](https://img.shields.io/badge/Status-under_development-blue))
+[!Static Badge]([https://img.shields.io/badge/status-under_development-blue](https://img.shields.io/badge/Status-under_development-blue))
 
 Analysis toolkit for microtiter plates
 
