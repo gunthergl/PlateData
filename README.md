@@ -1,5 +1,6 @@
 # Microtiter Plate Analysis Toolkit
 ![development status](https://img.shields.io/badge/status-under_development-green)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/OliverDietrich/microtiter-plate-analysis-toolkit/total)
 
 Analysis toolkit for microtiter plates
 
