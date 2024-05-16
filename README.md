@@ -1,5 +1,5 @@
 # Microtiter Plate Analysis Toolkit
-[!Static Badge]([https://img.shields.io/badge/status-under_development-blue](https://img.shields.io/badge/Status-under_development-blue))
+![development status]([https://img.shields.io/badge/status-under_development-blue](https://img.shields.io/badge/Status-under_development-blue))
 
 Analysis toolkit for microtiter plates
 
@@ -10,6 +10,9 @@ You can install the development version from GitHub using the `remotes` package:
 ```
 remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit")
 ```
+
+> [!WARNING]
+> Early development, no stable features.
 
 ## Documentation
 Coming soon...
