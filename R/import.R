@@ -1,11 +1,13 @@
-#' Read plate layout
+#' Import plate layout
+#'
+#' Import plate layout from excel file
 #'
 #' @param file_path Location of file
 #' @param well_key Column indicating wells in microtiter plate
 #'
 #' @export
 #'
-read_plateLayout <- function(
+import_plateLayout <- function(
     file_path = NULL,
     well_key  = "well"
 ) {
@@ -32,14 +34,17 @@ read_plateLayout <- function(
   return(object)
 }
 
-#' Read data from Tekan Spark
+#' Import data from Tekan Spark
+#'
+#' Import plate reader data from an excel sheet using the formatting by
+#' Tekan's Spark.
 #'
 #' @param file_path Location of file (must be xls or xlsx)
 #'
 #' @returns Tidy data frame with six columns (cycle, time, temp, well, count, mode)
 #' @export
 #'
-read_tekanSpark <- function(
+import_tekanSpark <- function(
     file_path = NULL
 ) {
   stopifnot(
@@ -81,6 +86,7 @@ read_tekanSpark <- function(
 
     # Add to list
     data[[i]] <- df
+    rm(df)
   }
 
   # Concatenate lists
