@@ -24,11 +24,11 @@ import_plateLayout <- function(
   object <- object[!is.na(object$well), ]
 
   # Extract rows (A, B, C, ...) from well_key (A1, B1, ...) and store as factor
-  object$row <- as.character(str_split_fixed(object$well, "", n = 2)[, 1])
+  object$row <- as.character(stringr::str_split_fixed(object$well, "", n = 2)[, 1])
   object$row <- factor(object$row, LETTERS[1:match(tail(sort(object$row), 1), LETTERS)])
 
   # Extract cols (1, 2, 3, ...) from well_key (A1, A2, ...) and store as factor
-  object$col <- as.numeric(str_split_fixed(object$well, "", n = 2)[, 2])
+  object$col <- as.numeric(stringr::str_split_fixed(object$well, "", n = 2)[, 2])
   object$col <- factor(object$col, 1:max(object$col))
 
   return(object)
@@ -47,6 +47,7 @@ import_plateLayout <- function(
 import_tekanSpark <- function(
     file_path = NULL
 ) {
+
   stopifnot(
     file.exists(file_path)
   )
@@ -57,11 +58,16 @@ import_tekanSpark <- function(
   }
 
   # Read data
-  object <- as.data.frame(readxl::read_excel(file_path))
+  object <- as.data.frame(readxl::read_excel(file_path, col_names = FALSE))
 
   # Re-format data
   data <- list()
-  for (i in which(stringr::str_detect(object[[1]], "Label"))) {
+  index <- which(stringr::str_detect(object[[1]], "Label"))
+  names(index) <- paste("Label", 1:length(index), sep = "_")
+  for (ind in names(index)) {
+
+    # Set index
+    i <- index[[ind]]
 
     # Extract measurement modes
     name <- object[[1]][i]
@@ -73,28 +79,35 @@ import_tekanSpark <- function(
     bottom <- min(na_vert[na_vert > top]) - 1
 
     # Extract data frame
-    df <- as.data.frame(t(object[top:bottom, ]))
-    dimnames(df) <- list(1:nrow(df), df[1, ])
+    df <- object[top:bottom, ]
+    col_names <- as.character(df[, 1])
+    col_names[1:3] <- c("cycle", "time", "temp")
+    df <- as.data.frame(t(df)) # Note: if colnames are not extracted above, formatting errors might occur (R 3.5.1)
     df <- df[-1, ]
-    names(df)[1:3] <- c("cycle", "time", "temp")
+    colnames(df) <- col_names
 
-    # Re-format
-    df <- tidyr::gather(df, "well", "count", -cycle, -time, -temp)
+    # Re-format with tidyr::gather throws error in Jupyter !!!
 
     # Add measurement mode
     df$mode <- mode
 
     # Add to list
-    data[[i]] <- df
+    data[[ind]] <- df
     rm(df)
   }
 
   # Concatenate lists
   data <- dplyr::bind_rows(data)
 
+  # Re-format
+  data <- tidyr::gather(data, "well", "count", -cycle, -time, -temp, -mode)
+
   # Adjust data types
   for (i in c("time", "temp", "count")) {
-    data[[i]] <- as.numeric(data[[i]])
+    data[[i]] <- as.numeric(as.character(data[[i]]))
+  }
+  for (i in c("well", "mode", "cycle")) {
+    data[[i]] <- as.character(data[[i]])
   }
 
   return(data)
