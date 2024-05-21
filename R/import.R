@@ -106,6 +106,7 @@ import_tekanSpark <- function(
   for (i in c("time", "temp", "count")) {
     data[[i]] <- as.numeric(as.character(data[[i]]))
   }
+  data[["time"]] <- data[["time"]] / 60 / 60
   for (i in c("well", "mode", "cycle")) {
     data[[i]] <- as.character(data[[i]])
   }

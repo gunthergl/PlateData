@@ -13,7 +13,12 @@ plot_timecourse(
   facet_x = "mode",
   facet_y = "host_number",
   facet_scales = "free",
-  theme_size = 20
+  theme_size = 20,
+  pl_title = "Timecourse",
+  y_transform = NULL,
+  x_transform = NULL,
+  xlab = "Time in hours",
+  ylab = NULL
 )
 }
 \arguments{
