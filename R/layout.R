@@ -5,6 +5,8 @@
 #' @param row.name Column indicating plate rows
 #' @param col.name Column indicating plate columns
 #'
+#' @export
+#'
 plot_plateLayout <- function(
     object = NULL,
     color = NULL,
