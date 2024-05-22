@@ -17,3 +17,10 @@ remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit@main")
 
 ## Documentation
 Coming soon...
+
+## ToDO
+- [ ] Get example data for import methods
+  - [ ] Layout
+  - [ ] Tekan Spark
+- [ ] Write tutorial for simple timecourse experiment (design + analysis)
+- [ ] Create development branch to stabilize main
