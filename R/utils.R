@@ -1,3 +1,95 @@
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Functions
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#' Minmax scaling
+#' 
+#' Rescales numeric vector to range 0-1
+#' 
+#' @param x Numeric vector
+#' 
+#' @export
+minmax <- function(x) {
+    y <- (x - min(x)) / (max(x) - min(x))
+}
+
+#' Mutate well to row and column indices
+#' 
+#' @param object data.frame with column well
+#' 
+#' @export
+mutate_well_to_row_col_indices <- function(object) {
+
+  stopifnot(
+    is.data.frame(object),
+    "well" %in% names(object)
+  )
+
+  object <- dplyr::mutate(object, 
+                          row = factor(as.character(stringr::str_split_fixed(well, "", 2)[,1])), 
+                          col = factor(as.numeric(stringr::str_split_fixed(well, "", 2)[,2]))
+                          )
+
+  return(object)
+}
+
+#' Detect plate type
+#' 
+#' Detect the plate type (e.g. 6-, 24- or 96-well) from the well names. Assigns
+#' one type per plate. Based on sorting the row and column indices and looking 
+#' for the closest plate type.
+#' 
+#' @param object Data.frame with columns 'plate', 'row', and 'col'
+#' 
+#' @return Named vector of plate type per plate
+#' 
+#' @export
+detect_plate_type <- function(object) {
+    
+    stopifnot(
+      c("plate", "well", "row", "col") %in% names(object)
+    )
+
+    ptype <- character(length = length(unique(object$plate)))
+    names(ptype) <- unique(object$plate)
+    pt <- plate_types
+    pt <- dplyr::mutate(pt, row = as.character(stringr::str_split_fixed(last_well, "", 2)[,1]), 
+                        col = as.numeric(stringr::str_split_fixed(last_well, "", 2)[,2])
+                        )
+
+    for (i in unique(object$plate)) {
+        p <- subset(object, plate == i)
+        last_well <- paste0(
+          max(as.character(p$row)), 
+          max(as.numeric(p$col))
+          )
+        pt$fit <- as.character(stringr::str_split_fixed(last_well, "", 2)[, 1]) <= pt$row & as.numeric(stringr::str_split_fixed(last_well, "", 2)[, 2]) <= pt$col
+
+        ptype[[i]] <- pt$type[pt$last_well == min(subset(pt, fit)$last_well)]
+    }
+    
+    return(ptype)
+}
+
+#' Detect largest plate type
+#' 
+#' @param object  Data.frame with columns 'plate', 'row', and 'col'
+#' 
+#' @return Character vector with only one plate type
+#' 
+#' @export 
+detect_largest_plate_type <- function(object) {
+
+  # Detect plate types
+  ptype <- detect_plate_type(object)
+
+  # Extract largest plate type
+  ind <- order(as.numeric(stringr::str_split(ptype, "-", simplify = TRUE)[, 1]), decreasing = TRUE)
+  ptype <- ptype[ind][[1]]
+
+  return(ptype)
+}
+
 #' Create dummy plate
 #'
 #' Creates a layout sheet of an empty microtiter well. The size of the plate
@@ -11,7 +103,9 @@
 #'
 dummyPlate <- function(
     type = NULL,
-    last_well = NULL
+    last_well = NULL,
+    plate_name = "dummy",
+    separator = "_"
     ) {
 
   # Check for type
@@ -54,6 +148,14 @@ dummyPlate <- function(
   df <- expand.grid(rows, cols)
   names(df) <- c("row", "col")
   df$well <- stringr::str_c(df$row, df$col)
+  df$plate <- plate_name
+  df$index <- paste(df$plate, df$well, sep=separator)
+  row.names(df) <- df$index
+  df <- df[order(df$plate, df$row, df$col), c("index", "plate", "well", "row", "col")]
+
+  # Specify vector types
+  df$row <- factor(df$row)
+  df$col <- factor(df$col)
 
   return(df)
 }

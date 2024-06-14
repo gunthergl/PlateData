@@ -113,3 +113,17 @@ import_tekanSpark <- function(
 
   return(data)
 }
+
+#' Import data from Elecsys
+#' 
+import_elecsys <- function(
+  file_path = NULL
+) {
+  stopifnot(
+    !is.null(file_path)
+  )
+
+  object <- NULL
+
+  return(object)
+}
