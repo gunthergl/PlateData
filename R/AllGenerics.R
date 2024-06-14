@@ -17,10 +17,10 @@ setGeneric("data", function(x) standardGeneric("data"))
 setGeneric("data<-", function(x, value) standardGeneric("data<-"))
 
 ########################################
-# Getters/setters for index
+# Getters/setters for key
 
 #' @export
-setGeneric("index", function(x) standardGeneric("index"))
+setGeneric("key", function(x) standardGeneric("key"))
 
 ########################################
 # Getters/setters for type

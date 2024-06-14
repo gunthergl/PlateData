@@ -1,7 +1,8 @@
 ### Methods for the PlateData class
 
-################################################################################
-### constructor function for PlateData class
+#-------------------------------------------------------------------------------
+# constructor function for PlateData class
+#-------------------------------------------------------------------------------
 
 #' Create a \code{PlateData} object
 #'
@@ -18,24 +19,29 @@
 #'
 CreatePlateData <- function(
   layout,
-  data = data.frame(),
+  data = NULL,
   misc = list(),
-  index = NULL,
+  key = NULL,
   ...
 ) {
   my_plate_type <- detect_plate_type(layout)
 
-  if (is.null(index)) {
-    stop("No index column has been specified.")
-  } else if (!index %in% names(layout) & index %in% names(data)) {
-    stop("Please specify a valid index column.")
+  if (is.null(key)) {
+    stop("No key column has been specified.")
+  } else if (!key %in% names(layout) & key %in% names(data)) {
+    stop("Please specify a valid key column.")
   }
 
-  methods::new("PlateData", layout = layout, data = data, type = my_plate_type, index = index)
+  # Use key as row.names
+  row.names(layout) <- layout[[key]]
+  layout <- layout[-which(names(layout) == key)]
+
+  methods::new("PlateData", layout = layout, data = data, type = my_plate_type, key = key)
 }
 
-################################################################################
-### Define validity check for PlateData class object
+#-------------------------------------------------------------------------------
+# Define validity check for PlateData class object
+#-------------------------------------------------------------------------------
 
 methods::setValidity("PlateData", function(object) {
     if (!all(c("plate", "well", "row", "col") %in% names(object@layout))) {
@@ -46,6 +52,14 @@ methods::setValidity("PlateData", function(object) {
   })
 
   methods::setValidity("PlateData", function(object) {
+    if (key(object) %in% names(layout(object))) {
+      "key(object) must be registered with data(object) not layout(object)."
+    } else {
+      TRUE
+    }
+  })
+
+  methods::setValidity("PlateData", function(object) {
     if (class(layout(object)$row) != "factor") {
       "@layout$row must be a factor"
     } else {
@@ -62,13 +76,19 @@ methods::setValidity("PlateData", function(object) {
   })
 
 
-################################################################################
-### subsetting an SCESet object
+#-------------------------------------------------------------------------------
+# subsetting an SCESet object
+#-------------------------------------------------------------------------------
 
-# ...
+.pd_subset <- function(x) {
 
-################################################################################
-### layout
+}
+
+setMethod("subset", "PlateData", .pd_subset)
+
+#-------------------------------------------------------------------------------
+# layout
+#-------------------------------------------------------------------------------
 
 #' Accessors for the 'layout' element of an PlateData object.
 #'
@@ -90,8 +110,9 @@ setMethod("layout<-", "PlateData", function(x, value) {
   x
 })
 
-################################################################################
-### data
+#-------------------------------------------------------------------------------
+# data
+#-------------------------------------------------------------------------------
 
 #' Accessors for the 'data' element of an PlateData object.
 #'
@@ -113,13 +134,19 @@ setMethod("data<-", "PlateData", function(x, value) {
   x
 })
 
+#-------------------------------------------------------------------------------
+# key
+#-------------------------------------------------------------------------------
+setMethod("key", "PlateData", function(x) x@key)
 
-setMethod("index", "PlateData", function(x) x@index)
-
+#-------------------------------------------------------------------------------
+# type
+#-------------------------------------------------------------------------------
 setMethod("type", "PlateData", function(x) x@type)
 
-################################################################################
-### show
+#-------------------------------------------------------------------------------
+# show
+#-------------------------------------------------------------------------------
 
 .pd_show <- function(object) {
   cat(is(object), "\n",
@@ -133,7 +160,7 @@ setMethod("type", "PlateData", function(x) x@type)
   cat("data", "\n")
   str(data(object))
   cat("\n")
-  cat("index:", index(object), "\n")
+  cat("key:", key(object), "\n")
   cat("\n")
   cat("type:", type(object))
 }

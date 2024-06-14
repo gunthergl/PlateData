@@ -149,9 +149,9 @@ dummyPlate <- function(
   names(df) <- c("row", "col")
   df$well <- stringr::str_c(df$row, df$col)
   df$plate <- plate_name
-  df$index <- paste(df$plate, df$well, sep=separator)
-  row.names(df) <- df$index
-  df <- df[order(df$plate, df$row, df$col), c("index", "plate", "well", "row", "col")]
+  df$key <- paste(df$plate, df$well, sep=separator)
+  row.names(df) <- df$key
+  df <- df[order(df$plate, df$row, df$col), c("key", "plate", "well", "row", "col")]
 
   # Specify vector types
   df$row <- factor(df$row)

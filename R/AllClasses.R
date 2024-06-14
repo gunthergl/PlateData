@@ -5,7 +5,7 @@
 #'
 #' @slot data Data.frame associating measurements and metadata with well and plate indices
 #' @slot layout Data.frame containing the plate layout
-#' @slot index Character vector indicating the index column. Must be shared between layout and data indicating the unique wells across plates.
+#' @slot key Character vector indicating the column to use as key between layout and data
 #' @slot type Character vector indicating plate type
 #' @slot misc A list of miscellaneous information
 #' 
@@ -16,7 +16,7 @@ methods::setClass(
   slots = c(
     layout = "data.frame",
     data = "data.frame",
-    index = "character",
+    key = "character",
     type = "vector",
     misc = "list"
   )

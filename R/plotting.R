@@ -112,7 +112,7 @@ plot_series <- function(
   x = NULL,
   y = NULL,
   col = NULL,
-  group = index(pd),
+  group = key(pd),
   facet = "plate",
   facet_scales = "fixed",
   facet_rows = NULL,
@@ -137,8 +137,8 @@ plot_series <- function(
   )
   
   # Create data.frame with generic names
-  dat <- merge(layout(pd), data(pd), by = index(pd))
-  df <- data.frame(.index = dat[[index(pd)]])
+  dat <- merge(layout(pd), data(pd), by = key(pd))
+  df <- data.frame(.key = dat[[key(pd)]])
   
   # Check presence and type of columns
   n <- 1
@@ -189,7 +189,7 @@ plot_series <- function(
     if (y_transform %in% def_scale_trans) { # Level 2
       y_scale <- ggplot2::scale_y_continuous(trans = y_transform)
     } else if (y_transform == "minmax") {
-      df <- dplyr::mutate(dplyr::group_by(df, .index), y = minmax(y))
+      df <- dplyr::mutate(dplyr::group_by(df, .key), y = minmax(y))
       y_scale <- NULL
     } else {
       warning(paste("The requested transformation", y_transform, "is not available and will be ignored."))
