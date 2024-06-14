@@ -11,6 +11,10 @@ You can install the development version from GitHub using the `remotes` package:
 ```
 remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit@main")
 ```
+or the even less stable but more up-to-date
+```
+remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit@develop")
+```
 
 > [!WARNING]
 > Early development, no stable features.
