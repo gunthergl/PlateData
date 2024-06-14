@@ -4,6 +4,8 @@
 
 R package for the analysis of microtiter plate-based data. Data must be attributable to a specific well (e.g. A1) in a plate (e.g. P1). The PlateData object stores the layout and data as data.frames connected by an index column. The plate type (e.g. 6-well, 24-well, 96-well is determined automatically and stored as 'type').
 
+<img src="img/overview.png"  width="400" />
+
 ## Installation
 There is no official release version yet, since the package is under development.
 
@@ -14,11 +16,8 @@ remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit@main")
 
 > [!WARNING]
 > Early development, no stable features.
-
-## Documentation
-<img src="img/overview.png"  width="400" />
-
-## ToDO
+> 
+## ToDo
 - [ ] Get example data for import methods
   - [ ] Layout
   - [ ] Tekan Spark
