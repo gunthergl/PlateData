@@ -17,7 +17,7 @@ remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit@main")
 
 ## Documentation
 ![PlateData](img/overview.png | width=80)
-<img src="img/overview.png"  width="200" />
+<img src="img/overview.png"  width="80%" />
 
 ## ToDO
 - [ ] Get example data for import methods
