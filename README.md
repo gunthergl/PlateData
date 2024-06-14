@@ -16,7 +16,7 @@ remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit@main")
 > Early development, no stable features.
 
 ## Documentation
-<img src="img/overview.png"  width="65%" />
+<img src="img/overview.png"  width="0.75" />
 
 ## ToDO
 - [ ] Get example data for import methods
