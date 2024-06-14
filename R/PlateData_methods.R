@@ -36,6 +36,11 @@ CreatePlateData <- function(
   row.names(layout) <- layout[[key]]
   layout <- layout[-which(names(layout) == key)]
 
+  # Add data
+  if(is.null(data)) {
+    data <- data.frame()
+  }
+
   methods::new("PlateData", layout = layout, data = data, type = my_plate_type, key = key)
 }
 
@@ -43,38 +48,58 @@ CreatePlateData <- function(
 # Define validity check for PlateData class object
 #-------------------------------------------------------------------------------
 
-methods::setValidity("PlateData", function(object) {
+.pd_validity <- function(object) {
+    msg <- NULL
+    valid <- TRUE
+
+    ## Define necessary columns in layout
     if (!all(c("plate", "well", "row", "col") %in% names(object@layout))) {
-      "@layout must contain the columns plate, well, row, and col"
-    } else {
-      TRUE
+      msg <- c(msg, "@layout must contain the columns plate, well, row, and col")
+      valid <- FALSE
     }
-  })
 
-  methods::setValidity("PlateData", function(object) {
+    ## Check that the key is present in data and used as unique row.names in layout
     if (key(object) %in% names(layout(object))) {
-      "key(object) must be registered with data(object) not layout(object)."
-    } else {
-      TRUE
+      msg <- c(msg, "key(object) must be registered with data(object) not layout(object).")
+      valid <- FALSE
     }
-  })
 
-  methods::setValidity("PlateData", function(object) {
+    if (any(duplicated(row.names(layout(pd))))) {
+      msg <- c(msg, "Duplicated key in layout(object). Must be unique.")
+      valid <- FALSE
+    }
+
+    ## In case data(object) is not empty
+    if (sum(dim(data(object))) != 0) {
+
+      ## Check that data(object) has a key column
+    if (!key(object) %in% names(data(object))) {
+      msg <- c(msg, "No column corresponding to key(object) found in data(object).")
+      valid <- FALSE
+    }
+
+    ## Check that all data rows are associated to a registered layout key
+    if (!all(data(object)[[key(object)]] %in% row.names(layout(object)))) {
+      msg <- c(msg, "Some samples in data(object) are not registered in layout(object).")
+      valid <- FALSE
+    }
+
+    }
+
     if (class(layout(object)$row) != "factor") {
-      "@layout$row must be a factor"
-    } else {
-      TRUE
+      msg <- c(msg, "@layout$row must be a factor")
+      valid <- FALSE
     }
-  })
 
-  methods::setValidity("PlateData", function(object) {
-    if (class(layout(object)$row) != "factor") {
-      "@layout$row must be a factor"
-    } else {
-      TRUE
+    if (class(layout(object)$col) != "factor") {
+      msg <- c(msg, "@layout$col must be a factor")
+      valid <- FALSE
     }
-  })
 
+     if(valid) TRUE else msg
+}
+
+methods::setValidity("PlateData", .pd_validity)
 
 #-------------------------------------------------------------------------------
 # subsetting an SCESet object

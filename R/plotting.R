@@ -112,7 +112,7 @@ plot_series <- function(
   x = NULL,
   y = NULL,
   col = NULL,
-  group = key(pd),
+  group = key(object),
   facet = "plate",
   facet_scales = "fixed",
   facet_rows = NULL,
@@ -137,8 +137,8 @@ plot_series <- function(
   )
   
   # Create data.frame with generic names
-  dat <- merge(layout(pd), data(pd), by = key(pd))
-  df <- data.frame(.key = dat[[key(pd)]])
+  dat <- merge(data(object), layout(object), by.x = key(object), by.y = "row.names")
+  df <- data.frame(.key = dat[[key(object)]])
   
   # Check presence and type of columns
   n <- 1

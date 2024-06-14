@@ -15,7 +15,7 @@ Data from multiple plates can be stored together
 
 \item{\code{layout}}{Data.frame containing the plate layout}
 
-\item{\code{index}}{Character vector indicating the index column. Must be shared between layout and data indicating the unique wells across plates.}
+\item{\code{key}}{Character vector indicating the column to use as key between layout and data}
 
 \item{\code{type}}{Character vector indicating plate type}
 

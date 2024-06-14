@@ -4,7 +4,7 @@
 \alias{CreatePlateData}
 \title{Create a \code{PlateData} object}
 \usage{
-CreatePlateData(layout, data = data.frame(), misc = list(), index = NULL, ...)
+CreatePlateData(layout, data = NULL, misc = list(), key = NULL, ...)
 }
 \arguments{
 \item{layout}{Data.frame containing columns 'plate' and 'well' alongside metadata}

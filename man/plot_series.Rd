@@ -9,7 +9,7 @@ plot_series(
   x = NULL,
   y = NULL,
   col = NULL,
-  group = index(pd),
+  group = key(object),
   facet = "plate",
   facet_scales = "fixed",
   facet_rows = NULL,
