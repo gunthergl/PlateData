@@ -15,9 +15,10 @@ plot_plateLayout(
   ylab = NULL,
   pl.barwidth = 1,
   pl.barheight = 10,
-  color.pal.type = "RdYlBu",
-  color.pal.dir = -1,
-  color.values = NULL
+  color.pal = NULL,
+  color.pal.dir = 1,
+  color.values = NULL,
+  color.pal.rows = NULL
 )
 }
 \arguments{

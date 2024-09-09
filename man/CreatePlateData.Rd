@@ -4,7 +4,15 @@
 \alias{CreatePlateData}
 \title{Create a \code{PlateData} object}
 \usage{
-CreatePlateData(layout, data = NULL, misc = list(), key = NULL, ...)
+CreatePlateData(
+  layout,
+  data = NULL,
+  misc = list(),
+  key = "key",
+  remove_unregistered_wells = FALSE,
+  add_unregistered_wells = FALSE,
+  ...
+)
 }
 \arguments{
 \item{layout}{Data.frame containing columns 'plate' and 'well' alongside metadata}
@@ -12,6 +20,12 @@ CreatePlateData(layout, data = NULL, misc = list(), key = NULL, ...)
 \item{data}{Data.frame containing columns \code{plate} and \code{well} alongside measurements}
 
 \item{misc}{List of miscellaneous information}
+
+\item{key}{Key to match data.frames between layout and data}
+
+\item{remove_unregistered_wells}{Whether to remove wells from data that do not appear in layout}
+
+\item{add_unregistered_wells}{Whether to add wells that appear in data to layout}
 }
 \value{
 A \code{\link{PlateData}} object

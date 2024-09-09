@@ -4,11 +4,16 @@
 \alias{minmax}
 \title{Minmax scaling}
 \usage{
-minmax(x)
+minmax(x, a = 0, b = 1)
 }
 \arguments{
 \item{x}{Numeric vector}
+
+\item{a}{Lower limit}
+
+\item{b}{Upper limit}
 }
 \description{
-Rescales numeric vector to range 0-1
+Rescales numeric vector to range a-b (default: 0-1)
+Based on the formula {\displaystyle x'=a+{\frac {(x-{\text{min}}(x))(b-a)}{{\text{max}}(x)-{\text{min}}(x)}}}
 }

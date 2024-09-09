@@ -12,7 +12,7 @@ a data.frame containing measurements attributable to
 individual wells. Can contain multiple rows per well.
 }
 \examples{
-data(pd)
+data(object)
 }
 \author{
 Oliver Dietrich

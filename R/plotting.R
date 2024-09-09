@@ -19,9 +19,10 @@ plot_plateLayout <- function(
     ylab = NULL,
     pl.barwidth=1,
     pl.barheight=10,
-    color.pal.type = "RdYlBu",
-    color.pal.dir = -1,
-    color.values = NULL
+    color.pal = NULL,
+    color.pal.dir = 1,
+    color.values = NULL,
+    color.pal.cols = NULL
 ) {
 
   # Check input
@@ -55,22 +56,40 @@ plot_plateLayout <- function(
   }
 
   # Guides
-    if (class(df$col) %in% c("numeric", "logical")) {
-        guides <- ggplot2::guides(col = ggplot2::guide_colorbar(barwidth = pl.barwidth, barheight = pl.barheight))
-        colorscale <- ggplot2::scale_color_distiller(palette = color.pal.type, direction = color.pal.dir)
-    } else if (class(df$col) %in% c("character", "factor", "boolean")) {
-      if (length(color.values) == length(unique(df$col))) {
-        guides <- ggplot2::guides(col = ggplot2::guide_legend())
-        colorscale <- ggplot2::scale_color_manual(values=color.values)
-      } else {
-        guides <- NULL
-        colorscale <- NULL
-      }
-    } else {
-        guides <- NULL
-        colorscale <- NULL
+  pals <- RColorBrewer::brewer.pal.info
+  guides <- NULL
+  colorscale <- NULL
+  case_a <- class(df$col) %in% c("numeric", "logical")
+  case_b <- class(df$col) %in% c("character", "factor", "boolean")
+  c_len <- length(unique(df$col))
+  if (case_a) {
+    if (is.null(color.pal)) {
+      color.pal <- 'Blues'
+      } else if (!color.pal %in% row.names(pals[pals$category %in% c('div', 'seq'), ])) {
+      message('The chosen color palette does not fit for numeric data. Defaulting to "Blues".')
+      color.pal <- 'Blues'
     }
-
+    guides <- ggplot2::guides(col = ggplot2::guide_colorbar(barwidth = pl.barwidth, barheight = pl.barheight))
+    colorscale <- ggplot2::scale_color_distiller(palette = color.pal, direction = color.pal.dir)
+  }
+  if (case_b) {
+    guides <- ggplot2::guides(col = ggplot2::guide_legend(ncol = color.pal.cols))
+    if (all(unique(df$col) %in% names(color.values))) {
+      color.values <- color.values[unique(df$col)]
+    }
+    if (length(color.values) == c_len) {
+        colorscale <- ggplot2::scale_color_manual(values=color.values)
+      } else if (is.null(color.pal)) {
+        if (c_len <= 9) {
+          colorscale <- ggplot2::scale_color_brewer(palette='Set1', direction=color.pal.dir)
+          } else if (c_len <= 12) {
+          colorscale <- ggplot2::scale_color_brewer(palette='Set3', direction=color.pal.dir)
+          }
+      } else if (color.pal %in% row.names(pals)) {
+        colorscale <- ggplot2::scale_color_brewer(palette=color.pal, direction=color.pal.dir)
+      }
+  }
+    
   # Plot
   p <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = y, col = col)) +
     ggplot2::geom_point(data=bg, ggplot2::aes(x=col, y=row),
@@ -120,11 +139,11 @@ plot_series <- function(
   pl_title = "Series",
   y_transform = NULL,
   x_transform = NULL,
-  xlab = NULL,
-  ylab = NULL,
+  xlab = x,
+  ylab = y,
   pl.barwidth=1,
   pl.barheight=10,
-  color.pal.type = "RdYlBu",
+  color.pal = "RdYlBu",
   color.pal.dir = -1,
   color.values = NULL,
   ...
@@ -137,13 +156,13 @@ plot_series <- function(
   )
   
   # Create data.frame with generic names
-  dat <- merge(data(object), layout(object), by.x = key(object), by.y = "row.names")
+  dat <- merge_data_to_layout(object)
   df <- data.frame(.key = dat[[key(object)]])
   
   # Check presence and type of columns
   n <- 1
-  cn <- c("x", "y", "group", "facet")
-  for (i in c(x, y, group, facet)) {
+  cn <- c("x", "y", "group")
+  for (i in c(x, y, group)) {
     j <- cn[[n]]
     if (!i %in% names(dat)) {
       stop(paste("The specified column", i, "for", j, "is not available."))
@@ -164,9 +183,27 @@ plot_series <- function(
   } else {
     stop(paste("The specified column", col, "does not exist."))
   }
+
+  # Faceting
+  if (stringr::str_detect(facet, '~')) {
+    fc_grid <- stringr::str_split(facet, '~')[[1]]
+    facet_x <- fc_grid[1]
+    facet_y <- fc_grid[2]
+    if (facet_x %in% names(dat)) {df$facet_x <- dat[[facet_x]]} else {stop("facet = x~y but x does not exist.")}
+    if (facet_y %in% names(dat)) {df$facet_y <- dat[[facet_y]]} else {stop("facet = x~y but y does not exist.")}
+    faceting <- ggplot2::facet_grid(facet_y~facet_x, scales = facet_scales)
+    pl_subtitle <- paste('Split by x:', facet_x, 'and y:', facet_y)
+  } else {
+    if (facet %in% names(dat)) {df$facet <- dat[[facet]]} else {stop(paste("facet", facet, "does not exist."))}
+    faceting <- ggplot2::facet_wrap(~facet, nrow = facet_rows, scales = facet_scales)
+    pl_subtitle <- paste('Split by: ', facet)
+  }
   
   # Theme
-  theme <- ggplot2::theme_bw(base_size = theme_size)
+  theme <- ggplot2::theme_bw(base_size = theme_size) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle=45, hjust=1, vjust=1)
+    )
   
   # Coordinate ranges and transformations
   def_scale_trans <- c("asn", "atanh", "boxcox", "date", "exp", "hms", "identity", "log", "log10", "log1p", "log2", "logit", "modulus", 
@@ -200,30 +237,35 @@ plot_series <- function(
   } # Level 1
 
   # Guides
-    if (class(df$col) %in% c("numeric", "logical")) {
-        guides <- ggplot2::guides(col = ggplot2::guide_colorbar(barwidth = pl.barwidth, barheight = pl.barheight))
-        colorscale <- ggplot2::scale_color_distiller(palette = color.pal.type, direction = color.pal.dir)
-    } else if (class(df$col) %in% c("character", "factor", "boolean")) {
-      if (length(color.values) == length(unique(df$col))) {
+  guides <- NULL
+  colorscale <- NULL
+  case_a <- class(df$col) %in% c("numeric", "logical")
+  case_b <- class(df$col) %in% c("character", "factor", "boolean")
+  c_len <- length(unique(df$col))
+  if (case_a) {
+    guides <- ggplot2::guides(col = ggplot2::guide_colorbar(barwidth = pl.barwidth, barheight = pl.barheight))
+    colorscale <- ggplot2::scale_color_distiller(palette = color.pal, direction = color.pal.dir)
+  }
+  if (case_b) {
+    if (all(unique(df$col) %in% names(color.values))) {
+      color.values <- color.values[unique(df$col)]
+    }
+    if (length(color.values) == length(unique(df$col))) {
         guides <- ggplot2::guides(col = ggplot2::guide_legend())
         colorscale <- ggplot2::scale_color_manual(values=color.values)
-      } else {
-        guides <- NULL
-        colorscale <- NULL
       }
-    } else {
-        guides <- NULL
-        colorscale <- NULL
-    }
+  }
 
-  
+  # Re-order
+  df <- df[order(df$col, decreasing=TRUE), ]
+
   # Plot
   plot <- ggplot2::ggplot(df, ggplot2::aes(x, y, col = col)) +
     ggplot2::geom_point() +
     ggplot2::geom_line(ggplot2::aes(group = group)) +
-    ggplot2::facet_wrap(~ facet, scales = facet_scales, nrow=facet_rows) +
+    faceting +
     theme  +
-    ggplot2::labs(title = pl_title,
+    ggplot2::labs(title = pl_title, col = col, subtitle = pl_subtitle,
          x = xlab, y = ylab) + 
     x_scale + y_scale +
     guides + colorscale

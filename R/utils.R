@@ -4,13 +4,38 @@
 
 #' Minmax scaling
 #' 
-#' Rescales numeric vector to range 0-1
+#' Rescales numeric vector to range a-b (default: 0-1)
+#' Based on the formula {\displaystyle x'=a+{\frac {(x-{\text{min}}(x))(b-a)}{{\text{max}}(x)-{\text{min}}(x)}}}
+#' 
+#' @param x Numeric vector
+#' @param a Lower limit
+#' @param b Upper limit
+#' 
+#' @export
+minmax <- function(x, a=0, b=1) {
+
+  stopifnot(is.numeric(x))
+
+  y <- a + ( (x-min(x)*(b-a) ) / (max(x) - min(x)) )
+
+  return(y)
+}
+
+#' Mean normalization
+#' 
+#' 
+#' Based on the formula {\displaystyle x'={\frac {x-{\bar {x}}}{{\text{max}}(x)-{\text{min}}(x)}}}
 #' 
 #' @param x Numeric vector
 #' 
 #' @export
-minmax <- function(x) {
-    y <- (x - min(x)) / (max(x) - min(x))
+meannorm <- function(x) {
+
+  stopifnot(is.numeric(x))
+
+  y <- (x - mean(x)) / (max(x) - min(x))
+
+  return(y)
 }
 
 #' Mutate well to row and column indices
@@ -65,7 +90,7 @@ detect_plate_type <- function(object) {
           )
         pt$fit <- as.character(stringr::str_split_fixed(last_well, "", 2)[, 1]) <= pt$row & as.numeric(stringr::str_split_fixed(last_well, "", 2)[, 2]) <= pt$col
 
-        ptype[[i]] <- pt$type[pt$last_well == min(subset(pt, fit)$last_well)]
+        ptype[[i]] <- as.character(head(subset(pt, fit), 1)[['type']])
     }
     
     return(ptype)
@@ -115,7 +140,7 @@ dummyPlate <- function(
     }
     if (type %in% plate_types$type) {
       index <- match(type,plate_types$type)
-      last_well <- plate_types$last_well[index]
+      last_well <- as.character(plate_types$last_well[index])
     } else {
       warning("The plate type you specified is not available. Please use another type or specify a 'last_well'.")
     }
@@ -170,21 +195,17 @@ dummyPlate <- function(
 #'
 #' @export
 #'
-combine_layout_and_data <- function(
-  data = NULL,
-  layout = NULL,
-  match_key = "well"
+merge_data_to_layout <- function(
+  object = NULL
 ) {
 
   stopifnot(
-    !is.null(data),
-    !is.null(layout)
+    !is.null(object),
+    class(object) == 'PlateData'
   )
 
-  # Join tables
-  index <- match(data[[match_key]], layout[[match_key]])
-  cols <- names(layout)[!names(layout) %in% c("well", "row", "col")]
-  data <- cbind(data, layout[index, cols])
+  # Merge
+  df <- merge(data(object), layout(object), by.x = key(object), by.y = "row.names")
 
-  return(data)
+  return(df)
 }

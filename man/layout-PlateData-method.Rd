@@ -12,7 +12,7 @@ a data.frame containing information attributable to
 individual wells. Contains one row per unique well.
 }
 \examples{
-layout(pd)
+layout(object)
 }
 \author{
 Oliver Dietrich

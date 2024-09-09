@@ -4,10 +4,12 @@
 \alias{import_plateLayout}
 \title{Import plate layout}
 \usage{
-import_plateLayout(file_path = NULL, well_key = "well")
+import_plateLayout(file_path = NULL, plate_name = "unspecified")
 }
 \arguments{
 \item{file_path}{Location of file}
+
+\item{plate_name}{Name of the plate the layout is associated with}
 
 \item{well_key}{Column indicating wells in microtiter plate}
 }

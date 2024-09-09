@@ -11,6 +11,9 @@
 #' @param layout Data.frame containing columns 'plate' and 'well' alongside metadata
 #' @param data Data.frame containing columns \code{plate} and \code{well} alongside measurements
 #' @param misc List of miscellaneous information
+#' @param key Key to match data.frames between layout and data
+#' @param remove_unregistered_wells Whether to remove wells from data that do not appear in layout
+#' @param add_unregistered_wells Whether to add wells that appear in data to layout
 #'
 #' @return A \code{\link{PlateData}} object
 #'
@@ -21,14 +24,14 @@ CreatePlateData <- function(
   layout,
   data = NULL,
   misc = list(),
-  key = NULL,
+  key = 'key',
+  remove_unregistered_wells = FALSE,
+  add_unregistered_wells = FALSE,
   ...
 ) {
   my_plate_type <- detect_plate_type(layout)
 
-  if (is.null(key)) {
-    stop("No key column has been specified.")
-  } else if (!key %in% names(layout) & key %in% names(data)) {
+  if (!key %in% names(layout) & key %in% names(data)) {
     stop("Please specify a valid key column.")
   }
 
@@ -39,6 +42,22 @@ CreatePlateData <- function(
   # Add data
   if(is.null(data)) {
     data <- data.frame()
+    fix_unregistered_samples <- FALSE
+  } else {
+    fix_unregistered_samples <- TRUE
+  }
+
+  # Deal with unregistered wells
+  if (fix_unregistered_samples) {
+    if (remove_unregistered_wells) {
+      index <- which(!data[[key]] %in% row.names(layout))
+      data <- data[-index, ]
+      message(paste('Removing unregistered wells:', stringr::str_flatten(na.omit(unique(data[[key]][index])), collapse = ", ")))
+      
+    }
+    if (add_unregistered_wells) {
+      stop('Not implemented yet.')
+    }
   }
 
   methods::new("PlateData", layout = layout, data = data, type = my_plate_type, key = key)
@@ -64,7 +83,7 @@ CreatePlateData <- function(
       valid <- FALSE
     }
 
-    if (any(duplicated(row.names(layout(pd))))) {
+    if (any(duplicated(row.names(layout(object))))) {
       msg <- c(msg, "Duplicated key in layout(object). Must be unique.")
       valid <- FALSE
     }
@@ -72,7 +91,7 @@ CreatePlateData <- function(
     ## In case data(object) is not empty
     if (sum(dim(data(object))) != 0) {
 
-      ## Check that data(object) has a key column
+    ## Check that data(object) has a key column
     if (!key(object) %in% names(data(object))) {
       msg <- c(msg, "No column corresponding to key(object) found in data(object).")
       valid <- FALSE
@@ -83,14 +102,20 @@ CreatePlateData <- function(
       msg <- c(msg, "Some samples in data(object) are not registered in layout(object).")
       valid <- FALSE
     }
-
     }
 
+    ## Check that columns are unique across layout and data
+    all_cols <- c(names(layout(object)), names(data(object)))
+    if (any(duplicated(all_cols))) {
+      msg <- c(msg, paste("column '", all_cols[duplicated(all_cols)], "'is duplicated in layout and data."))
+      valid <- FALSE
+    }
+
+    ## Check that row and col are factors
     if (class(layout(object)$row) != "factor") {
       msg <- c(msg, "@layout$row must be a factor")
       valid <- FALSE
     }
-
     if (class(layout(object)$col) != "factor") {
       msg <- c(msg, "@layout$col must be a factor")
       valid <- FALSE
@@ -102,7 +127,7 @@ CreatePlateData <- function(
 methods::setValidity("PlateData", .pd_validity)
 
 #-------------------------------------------------------------------------------
-# subsetting an SCESet object
+# subsetting a PlateData object
 #-------------------------------------------------------------------------------
 
 .pd_subset <- function(x) {
@@ -110,6 +135,10 @@ methods::setValidity("PlateData", .pd_validity)
 }
 
 setMethod("subset", "PlateData", .pd_subset)
+
+#-------------------------------------------------------------------------------
+# merging PlateData object
+#-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # layout
@@ -126,7 +155,7 @@ setMethod("subset", "PlateData", .pd_subset)
 #' @export
 #' 
 #' @examples 
-#' layout(pd)
+#' layout(object)
 setMethod("layout", "PlateData", function(x) x@layout)
 
 setMethod("layout<-", "PlateData", function(x, value) {
@@ -150,7 +179,7 @@ setMethod("layout<-", "PlateData", function(x, value) {
 #' @export
 #' 
 #' @examples 
-#' data(pd)
+#' data(object)
 setMethod("data", "PlateData", function(x) x@data)
 
 setMethod("data<-", "PlateData", function(x, value) {

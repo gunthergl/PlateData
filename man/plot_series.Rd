@@ -21,7 +21,7 @@ plot_series(
   ylab = NULL,
   pl.barwidth = 1,
   pl.barheight = 10,
-  color.pal.type = "RdYlBu",
+  color.pal = "RdYlBu",
   color.pal.dir = -1,
   color.values = NULL,
   ...
