@@ -18,7 +18,7 @@ plot_plateLayout(
   color.pal = NULL,
   color.pal.dir = 1,
   color.values = NULL,
-  color.pal.rows = NULL
+  color.pal.cols = NULL
 )
 }
 \arguments{

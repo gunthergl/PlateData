@@ -4,7 +4,21 @@
 \alias{import_elecsys}
 \title{Import data from Elecsys}
 \usage{
-import_elecsys(file_path = NULL)
+import_elecsys(
+  file_path = NULL,
+  run_name = "unspecified",
+  sep = ";",
+  plate_well = "PID"
+)
+}
+\arguments{
+\item{file_path}{Path to file}
+
+\item{run_name}{Name of run}
+
+\item{sep}{Separator used in CSV}
+
+\item{plate_well}{Column storing plate and well, separated by underscore (_)}
 }
 \description{
 Import data from Elecsys

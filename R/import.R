@@ -266,7 +266,7 @@ import_biacore <- function(
   )
 
   # Read from excel file
-  object <- readxl::read_excel(files$biacore)
+  object <- readxl::read_excel(file_path)
 
   # Adjust colnames
   names(object) <- paste0("biacore_", names(object))
