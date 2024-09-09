@@ -1,12 +1,14 @@
-Package: microtiter.plate.toolkit
-Title: What the Package Does (One Line, Title Case)
+Package: PlateData
+Title: Functions for Plate-based Data
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("Oliver", "Dietrich", , "Dietrich.OliverDominik@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Description: Measurements related to microtiter plates, here referred to as plate data, are common in life science.
+    PlateData is a S4 class to store data that can be linked to one well of a microtiter plate (e.g. A1). Unique wells
+    are stored in the layout while measurements are stored in data. Contains functions that facilitate easy exploration,
+    mutation, merging and subsetting.
+License: GPL-2.0
 Depends: 
     R (>= 2.10)
 Encoding: UTF-8

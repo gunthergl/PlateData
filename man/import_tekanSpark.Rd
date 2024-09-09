@@ -4,7 +4,7 @@
 \alias{import_tekanSpark}
 \title{Import data from Tekan Spark}
 \usage{
-import_tekanSpark(file_path = NULL)
+import_tekanSpark(file_path = NULL, plate_name = "unspecified")
 }
 \arguments{
 \item{file_path}{Location of file (must be xls or xlsx)}

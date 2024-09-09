@@ -1,3 +1,120 @@
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Functions
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#' Minmax scaling
+#' 
+#' Rescales numeric vector to range a-b (default: 0-1)
+#' Based on the formula {\displaystyle x'=a+{\frac {(x-{\text{min}}(x))(b-a)}{{\text{max}}(x)-{\text{min}}(x)}}}
+#' 
+#' @param x Numeric vector
+#' @param a Lower limit
+#' @param b Upper limit
+#' 
+#' @export
+minmax <- function(x, a=0, b=1) {
+
+  stopifnot(is.numeric(x))
+
+  y <- a + ( (x-min(x)*(b-a) ) / (max(x) - min(x)) )
+
+  return(y)
+}
+
+#' Mean normalization
+#' 
+#' 
+#' Based on the formula {\displaystyle x'={\frac {x-{\bar {x}}}{{\text{max}}(x)-{\text{min}}(x)}}}
+#' 
+#' @param x Numeric vector
+#' 
+#' @export
+meannorm <- function(x) {
+
+  stopifnot(is.numeric(x))
+
+  y <- (x - mean(x)) / (max(x) - min(x))
+
+  return(y)
+}
+
+#' Mutate well to row and column indices
+#' 
+#' @param object data.frame with column well
+#' 
+#' @export
+mutate_well_to_row_col_indices <- function(object) {
+
+  stopifnot(
+    is.data.frame(object),
+    "well" %in% names(object)
+  )
+
+  object <- dplyr::mutate(object, 
+                          row = factor(as.character(stringr::str_split_fixed(well, "", 2)[,1])), 
+                          col = factor(as.numeric(stringr::str_split_fixed(well, "", 2)[,2]))
+                          )
+
+  return(object)
+}
+
+#' Detect plate type
+#' 
+#' Detect the plate type (e.g. 6-, 24- or 96-well) from the well names. Assigns
+#' one type per plate. Based on sorting the row and column indices and looking 
+#' for the closest plate type.
+#' 
+#' @param object Data.frame with columns 'plate', 'row', and 'col'
+#' 
+#' @return Named vector of plate type per plate
+#' 
+#' @export
+detect_plate_type <- function(object) {
+    
+    stopifnot(
+      c("plate", "well", "row", "col") %in% names(object)
+    )
+
+    ptype <- character(length = length(unique(object$plate)))
+    names(ptype) <- unique(object$plate)
+    pt <- plate_types
+    pt <- dplyr::mutate(pt, row = as.character(stringr::str_split_fixed(last_well, "", 2)[,1]), 
+                        col = as.numeric(stringr::str_split_fixed(last_well, "", 2)[,2])
+                        )
+
+    for (i in unique(object$plate)) {
+        p <- subset(object, plate == i)
+        last_well <- paste0(
+          max(as.character(p$row)), 
+          max(as.numeric(p$col))
+          )
+        pt$fit <- as.character(stringr::str_split_fixed(last_well, "", 2)[, 1]) <= pt$row & as.numeric(stringr::str_split_fixed(last_well, "", 2)[, 2]) <= pt$col
+
+        ptype[[i]] <- as.character(head(subset(pt, fit), 1)[['type']])
+    }
+    
+    return(ptype)
+}
+
+#' Detect largest plate type
+#' 
+#' @param object  Data.frame with columns 'plate', 'row', and 'col'
+#' 
+#' @return Character vector with only one plate type
+#' 
+#' @export 
+detect_largest_plate_type <- function(object) {
+
+  # Detect plate types
+  ptype <- detect_plate_type(object)
+
+  # Extract largest plate type
+  ind <- order(as.numeric(stringr::str_split(ptype, "-", simplify = TRUE)[, 1]), decreasing = TRUE)
+  ptype <- ptype[ind][[1]]
+
+  return(ptype)
+}
+
 #' Create dummy plate
 #'
 #' Creates a layout sheet of an empty microtiter well. The size of the plate
@@ -11,7 +128,9 @@
 #'
 dummyPlate <- function(
     type = NULL,
-    last_well = NULL
+    last_well = NULL,
+    plate_name = "dummy",
+    separator = "_"
     ) {
 
   # Check for type
@@ -21,7 +140,7 @@ dummyPlate <- function(
     }
     if (type %in% plate_types$type) {
       index <- match(type,plate_types$type)
-      last_well <- plate_types$last_well[index]
+      last_well <- as.character(plate_types$last_well[index])
     } else {
       warning("The plate type you specified is not available. Please use another type or specify a 'last_well'.")
     }
@@ -54,6 +173,14 @@ dummyPlate <- function(
   df <- expand.grid(rows, cols)
   names(df) <- c("row", "col")
   df$well <- stringr::str_c(df$row, df$col)
+  df$plate <- plate_name
+  df$key <- paste(df$plate, df$well, sep=separator)
+  row.names(df) <- df$key
+  df <- df[order(df$plate, df$row, df$col), c("key", "plate", "well", "row", "col")]
+
+  # Specify vector types
+  df$row <- factor(df$row)
+  df$col <- factor(df$col)
 
   return(df)
 }
@@ -68,21 +195,17 @@ dummyPlate <- function(
 #'
 #' @export
 #'
-combine_layout_and_data <- function(
-  data = NULL,
-  layout = NULL,
-  match_key = "well"
+merge_data_to_layout <- function(
+  object = NULL
 ) {
 
   stopifnot(
-    !is.null(data),
-    !is.null(layout)
+    !is.null(object),
+    class(object) == 'PlateData'
   )
 
-  # Join tables
-  index <- match(data[[match_key]], layout[[match_key]])
-  cols <- names(layout)[!names(layout) %in% c("well", "row", "col")]
-  data <- cbind(data, layout[index, cols])
+  # Merge
+  df <- merge(data(object), layout(object), by.x = key(object), by.y = "row.names")
 
-  return(data)
+  return(df)
 }

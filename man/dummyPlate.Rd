@@ -4,7 +4,12 @@
 \alias{dummyPlate}
 \title{Create dummy plate}
 \usage{
-dummyPlate(type = NULL, last_well = NULL)
+dummyPlate(
+  type = NULL,
+  last_well = NULL,
+  plate_name = "dummy",
+  separator = "_"
+)
 }
 \arguments{
 \item{type}{Name of layout (e.g. 6-well, also for 12, 24, 48, 96)}

@@ -4,12 +4,13 @@
 #'
 #' @param file_path Location of file
 #' @param well_key Column indicating wells in microtiter plate
+#' @param plate_name Name of the plate the layout is associated with
 #'
 #' @export
 #'
 import_plateLayout <- function(
     file_path = NULL,
-    well_key  = "well"
+    plate_name = 'unspecified'
 ) {
 
   stopifnot(
@@ -19,6 +20,10 @@ import_plateLayout <- function(
 
   # Read data
   object <- as.data.frame(readxl::read_excel(file_path))
+
+  if (!'well' %in% names(object)) {
+    stop('Layout must contain column "well".')
+  }
 
   # Remove empty rows
   object <- object[!is.na(object$well), ]
@@ -30,6 +35,10 @@ import_plateLayout <- function(
   # Extract cols (1, 2, 3, ...) from well_key (A1, A2, ...) and store as factor
   object$col <- as.numeric(stringr::str_split_fixed(object$well, "", n = 2)[, 2])
   object$col <- factor(object$col, 1:max(object$col))
+
+  # Add plate column
+  object$plate <- plate_name
+  object$key <- paste0(object$plate, '_', object$well)
 
   return(object)
 }
@@ -45,7 +54,8 @@ import_plateLayout <- function(
 #' @export
 #'
 import_tekanSpark <- function(
-    file_path = NULL
+    file_path = NULL,
+    plate_name = 'unspecified'
 ) {
 
   stopifnot(
@@ -58,7 +68,7 @@ import_tekanSpark <- function(
   }
 
   # Read data
-  object <- as.data.frame(readxl::read_excel(file_path, col_names = FALSE))
+  object <- suppressMessages(as.data.frame(readxl::read_excel(file_path, col_names = FALSE)))
 
   # Re-format data
   data <- list()
@@ -97,7 +107,8 @@ import_tekanSpark <- function(
   }
 
   # Concatenate lists
-  data <- dplyr::bind_rows(data)
+  #data <- dplyr::bind_rows(data)
+  data <- do.call("rbind", data)
 
   # Re-format
   data <- tidyr::gather(data, "well", "count", -cycle, -time, -temp, -mode)
@@ -111,5 +122,166 @@ import_tekanSpark <- function(
     data[[i]] <- as.character(data[[i]])
   }
 
+  # Add plate column and remove components
+  data$plate <- plate_name
+  data$key <- paste0(data$plate, "_", data$well)
+  data <- data[, -which(names(data) %in% c("plate", "well"))]
+
   return(data)
+}
+
+#' Import data from Elecsys
+#' 
+#' @param file_path Path to file
+#' @param run_name Name of run
+#' @param sep Separator used in CSV
+#' @param plate_well Column storing plate and well, separated by underscore (_)
+#' 
+import_elecsys <- function(
+  file_path = NULL,
+  run_name = 'unspecified',
+  sep = ';',
+  plate_well = 'PID'
+) {
+  stopifnot(
+    !is.null(file_path)
+  )
+
+  # Read data
+  object <- read.table(file_path, sep = sep, header=TRUE)
+
+  # Add file and run name
+  object[['file_name']] <- basename(file_path)
+  object[['run_name']] <- run_name
+
+  # Adjust antibody names
+  object[['antibody']] <- object$PSET
+  ind <- stringr::str_detect(object$antibody, "-")
+  if (sum(ind) >= 1) {
+    object$antibody[ind] <- stringr::str_split(object$antibody[ind], "-", simplify=TRUE)[,2]
+  }
+
+  # Convert MM to Dilution
+  lookup <- c("0"=0, "0_01"=1e-2, "0_1"=1e-1, "1"=1e-0, "10"=1e1, "100"=1e2, "1000"=1e3, "10000"=1e4)
+  object$Dilution <- as.numeric(lookup[object$MM])
+  
+  # Convert SROH to Signal
+  object$Signal <- object[["SROH"]]
+  object$Signal_log10 <- log10(object$Signal)
+
+  # Create PlateData specific columns
+  x <- stringr::str_split(object[[plate_well]], '_', simplify=TRUE) 
+  object[['plate']] <- x[, 1]
+  object[['well']] <- x[, 2]
+  object <- mutate_well_to_row_col_indices(object)
+
+  # Add custom row.names
+  object[['.index']] <- object[[plate_well]]
+  object <- mutate(group_by(object, .index), measurement_number = 1:length(.index))
+  object[['.index']] <- NULL
+  object[['measurement']] <- paste0(object[[plate_well]], '_', object[['measurement_number']])
+
+  return(object)
+}
+
+#' Import concentration measurements
+#' 
+#' Import ELISA measurements for antibodies screened via Elecsys.
+#' Not well standardized excel spreadsheet with rectangular plate-like shape containing
+#' the antibody names (e.g. 23.068-63H4-IgG) and IgG concentration in ng/mL.
+#' 
+#' @param file_path File path
+#' 
+#' @return Data.frame
+#' 
+#' @export 
+#' 
+import_elecsys_concentrations <- function(
+  file_path = NULL,
+  plate_name = NULL
+) {
+
+  stopifnot(
+    !is.null(file_path)
+  )
+  if (is.null(plate_name)) {
+    stop('Please specify the plate_name.')
+  } else if (class(plate_name) != 'character' & length(plate_name) == 1) {
+    stop('Wrong type of plate_name. Please supply a character vector of length 1.')
+  }
+
+  df <- suppressMessages(
+    read_excel(file_path, col_names = FALSE)
+  )
+
+  # Detect plate borders
+  tl <- which(str_detect(df[[1]], "A")) - 1
+  bl <- which(str_detect(df[[1]], "H"))
+
+  # Extract plate layout
+  l <- df[tl[1]:bl[1], ]
+  names(l) <- c("row", 2:ncol(l)-1)
+  l <- l[-1, ]
+  l <- gather(l, "col", "antibody", -row)
+
+  # Extract concentrations
+  c <- df[tl[2]:bl[2], ]
+  names(c) <- c("row", 2:ncol(c)-1)
+  c <- c[-1, ]
+  c <- gather(c, "col", "concentration", -row)
+
+  # Combine
+  df <- merge(l, c)
+  df <- df[!is.na(df$antibody) & df$antibody != 'empty', ] # remove empty
+  df <- df[!is.na(df$concentration) & df$concentration != 'empty', ] # remove empty
+
+  # Adjust antibody names
+  df$antibody <- stringr::str_split(df$antibody, "-", simplify=TRUE)[,2]
+
+  # Adjust vector types
+  df[['concentration']] <- as.numeric(df[['concentration']])
+
+  # Create PlateData specific columns
+  df[['plate']] <- plate_name
+  df[['well']] <- paste0(df$row, df$col)
+
+  return(df)
+}
+
+#' Import Biacore
+#' 
+#' @param file_path
+#' 
+#' @return data.frame
+#' 
+#' @export 
+#' 
+#' 
+import_biacore <- function(
+  file_path = NULL
+) {
+
+  stopifnot(
+    !is.null(file_path)
+  )
+
+  # Read from excel file
+  object <- readxl::read_excel(file_path)
+
+  # Adjust colnames
+  names(object) <- paste0("biacore_", names(object))
+
+  # Remove NAs
+  object <- object[!is.na(object$biacore_Barcode), ]
+
+  # Adjust antibody name
+  object$antibody <- stringr::str_split(object[["biacore_L N"]], "-", simplify=TRUE)[,2]
+
+  # Create PlateData specific columns
+  object$plate <- stringr::str_split(object$biacore_Barcode, "_", simplify=TRUE)[,1]
+  object$well <- object[["biacore_Well Nr."]]
+  object$row <- stringr::str_split_fixed(object$well, "", 2)[,1]
+  object$col <- stringr::str_split_fixed(object$well, "", 2)[,2]
+
+  return(object)
 }
