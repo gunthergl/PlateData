@@ -4,12 +4,7 @@
 \alias{detect_plate_type}
 \title{Detect plate type}
 \usage{
-detect_plate_type(
-  object,
-  plate_types = data.frame(type = as.character(c("6-well", "12-well", "24-well",
-    "48-well", "96-well", "384-well")), last_well = as.character(c("B3", "C4", "D6",
-    "F8", "H12", "P24")))
-)
+detect_plate_type(object, plate_types = plate_types_default)
 }
 \arguments{
 \item{object}{Data.frame with columns 'plate', 'row', and 'col'}

@@ -8,7 +8,8 @@ dummyPlate(
   type = NULL,
   last_well = NULL,
   plate_name = "dummy",
-  separator = "_"
+  separator = "_",
+  plate_types = plate_types_default
 )
 }
 \arguments{

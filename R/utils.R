@@ -73,10 +73,7 @@ mutate_well_to_row_col_indices <- function(object) {
 #' @return Named vector of plate type per plate
 #'
 #' @export
-detect_plate_type <- function(object, plate_types = data.frame(
-                                  type = as.character(c("6-well", "12-well", "24-well", "48-well", "96-well", "384-well")),
-                                  last_well = as.character(c("B3", "C4", "D6", "F8", "H12", "P24"))
-                              )) {
+detect_plate_type <- function(object, plate_types = plate_types_default) {
     plate <- fit <- NULL # Only for lintr
     stopifnot(
         c("plate", "well", "row", "col") %in% names(object)
@@ -140,10 +137,7 @@ dummyPlate <- function(type = NULL, # nolint: object_name_linter.
                        last_well = NULL,
                        plate_name = "dummy",
                        separator = "_",
-                       plate_types = data.frame(
-                           type = as.character(c("6-well", "12-well", "24-well", "48-well", "96-well", "384-well")),
-                           last_well = as.character(c("B3", "C4", "D6", "F8", "H12", "P24"))
-                       )) {
+                       plate_types = plate_types_default) {
     # Check for type
     if (!is.null(type)) {
         if (!is.null(last_well)) {
