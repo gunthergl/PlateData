@@ -1,3 +1,3 @@
 # PlateData (development version)
 
-* Initial CRAN submission.
+* Not submitted to CRAN yet. 
