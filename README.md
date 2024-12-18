@@ -40,6 +40,8 @@ usethis::create_from_github(
 )
 
 usethis::use_tidy_github()
+
+#### The following needs to be REDONE for the upstream repo
 usethis::use_tidy_github_actions()
 # Which repo should we target? 
 # 1: gunthergl/PlateData = 'origin'
@@ -48,5 +50,27 @@ usethis::use_tidy_github_actions()
 usethis::use_github_action("check-standard")
 usethis::use_tidy_github_labels()
 usethis::use_pkgdown_github_pages()
+#### Until here, redo for upstream
 
+usethis::use_author(
+    given = "Oliver",
+    family = "Dietrich",
+    email = "Dietrich.OliverDominik@gmail.com",
+    role = c("aut", "cre"),
+    comment = c("ORCID" = "0000-0002-4776-8960")
+)
+usethis::use_news_md()
+lintr::use_lintr(type = "tidyverse")
 ```
+
+
+precommit is a wonderful tool to check your code before committing it. 
+```r
+# https://lorenzwalthert.github.io/precommit/articles/precommit.html
+# install.packages("precommit")
+# bash::$ conda deactivate
+# bash::$ pip3 install pre-commit
+precommit::install_precommit()
+precommit::use_precommit()
+```
+Before committing: ``pre-commit install --hook-type pre-push``, then commit. 
