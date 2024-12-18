@@ -1,6 +1,6 @@
 # All available hooks: https://pre-commit.com/hooks.html
 # R specific hooks: https://github.com/lorenzwalthert/precommit
-fail_fast: true
+fail_fast: false
 repos:
 -   repo: https://github.com/lorenzwalthert/precommit
     rev: v0.4.3.9003
@@ -50,7 +50,7 @@ repos:
     #       \.github/workflows/.*|
     #       data/.*|
     #       )$
-    -   id: lintr
+    # -   id: lintr  # Makes problems with NOT loading the package properly. Removing. 
     -   id: readme-rmd-rendered
     -   id: parsable-R
     -   id: no-browser-statement

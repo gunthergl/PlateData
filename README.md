@@ -64,6 +64,13 @@ lintr::use_lintr(type = "tidyverse")
 # Change manually to:
 # linters: linters_with_defaults(line_length_linter = line_length_linter(120),indentation_linter = indentation_linter(4)) # see vignette("lintr")
 # encoding: "UTF-8"
+
+usethis::use_package("stringr")
+usethis::use_package("dplyr")
+usethis::use_package("readxl")
+usethis::use_package("tidyr")
+usethis::use_package("RColorBrewer")
+usethis::use_package("ggplot2")
 ```
 
 
@@ -75,6 +82,9 @@ precommit is a wonderful tool to check your code before committing it.
 # bash::$ pip3 install pre-commit
 precommit::install_precommit()
 precommit::use_precommit()
+
+# To style all the files with an indent of 4 spaces
+styler::style_dir(style = styler::tidyverse_style, indent_by = 4)
 ```
 
 

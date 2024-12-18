@@ -8,17 +8,16 @@
 #' @slot key Character vector indicating the column to use as key between layout and data
 #' @slot type Character vector indicating plate type
 #' @slot misc A list of miscellaneous information
-#' 
+#'
 #' @exportClass PlateData
 #'
 methods::setClass(
-  Class = "PlateData",
-  slots = c(
-    layout = "data.frame",
-    data = "data.frame",
-    key = "character",
-    type = "vector",
-    misc = "list"
-  )
+    Class = "PlateData",
+    slots = c(
+        layout = "data.frame",
+        data = "data.frame",
+        key = "character",
+        type = "vector",
+        misc = "list"
+    )
 )
-

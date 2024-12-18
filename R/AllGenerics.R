@@ -13,7 +13,7 @@ setGeneric("layout<-", function(x, value) standardGeneric("layout<-"))
 #' @export
 setGeneric("data", function(x) standardGeneric("data"))
 
-#' @export 
+#' @export
 setGeneric("data<-", function(x, value) standardGeneric("data<-"))
 
 ########################################

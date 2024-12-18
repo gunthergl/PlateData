@@ -4,10 +4,21 @@
 \alias{detect_plate_type}
 \title{Detect plate type}
 \usage{
-detect_plate_type(object)
+detect_plate_type(
+  object,
+  plate_types = data.frame(type = as.character(c("6-well", "12-well", "24-well",
+    "48-well", "96-well", "384-well")), last_well = as.character(c("B3", "C4", "D6",
+    "F8", "H12", "P24")))
+)
 }
 \arguments{
 \item{object}{Data.frame with columns 'plate', 'row', and 'col'}
+
+\item{plate_types}{Plate types available for dummyPlate
+
+Stores the 'last_well' for a number of commonly used plate types,
+indicating the bottom right corner of a plate to distinguish
+plate dimensions.}
 }
 \value{
 Named vector of plate type per plate
