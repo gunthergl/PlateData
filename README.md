@@ -71,6 +71,9 @@ usethis::use_package("readxl")
 usethis::use_package("tidyr")
 usethis::use_package("RColorBrewer")
 usethis::use_package("ggplot2")
+usethis::use_package("methods")
+
+usethis::use_gpl_license()
 ```
 
 

@@ -8,7 +8,7 @@ Description: Measurements related to microtiter plates, here referred to as plat
     PlateData is a S4 class to store data that can be linked to one well of a microtiter plate (e.g. A1). Unique wells
     are stored in the layout while measurements are stored in data. Contains functions that facilitate easy exploration,
     mutation, merging and subsetting.
-License: GPL-2.0
+License: GPL (>= 3)
 Depends: 
     R (>= 2.10)
 Encoding: UTF-8
@@ -19,6 +19,7 @@ URL: https://gunthergl.github.io/PlateData/
 Imports: 
     dplyr,
     ggplot2,
+    methods,
     RColorBrewer,
     readxl,
     stringr,
