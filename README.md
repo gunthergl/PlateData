@@ -76,3 +76,37 @@ precommit is a wonderful tool to check your code before committing it.
 precommit::install_precommit()
 precommit::use_precommit()
 ```
+
+
+
+
+# How to contribute
+
+```r
+# Use pre-commits to check your code before committing it
+remotes::install_github("lorenzwalthert/precommit")
+precommit::install_precommit()
+precommit::use_precommit()
+
+# Increase the versions, manually or by using usethis::use_version()
+usethis::use_version("minor")
+usethis::use_version("dev")
+
+# Add new functionality and document it
+# During development, have a clean R environment and run devtools::load_all() to load the current status of the package
+devtools::load_all()
+
+# After adding new functionality, run devtools::check() to update the documentation
+devtools::check()
+devtools::document()
+
+# Vignettes are a great way to document your package
+# Add a new vignette by running
+usethis::use_vignette("vignette_name")
+# Change the vignette in vignettes/vignette_name.Rmd
+# Build the vignette by running
+devtools::build_vignettes() # This also installs the package
+
+```
+
+- Disable pre-commit for a single commit: ``git commit . -m 'quick fix' --no-verify``
