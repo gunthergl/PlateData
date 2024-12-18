@@ -61,6 +61,9 @@ usethis::use_author(
 )
 usethis::use_news_md()
 lintr::use_lintr(type = "tidyverse")
+# Change manually to:
+# linters: linters_with_defaults(line_length_linter = line_length_linter(120),indentation_linter = indentation_linter(4)) # see vignette("lintr")
+# encoding: "UTF-8"
 ```
 
 
@@ -73,4 +76,3 @@ precommit is a wonderful tool to check your code before committing it.
 precommit::install_precommit()
 precommit::use_precommit()
 ```
-Before committing: ``pre-commit install --hook-type pre-push``, then commit. 
