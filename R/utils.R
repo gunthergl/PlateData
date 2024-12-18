@@ -48,8 +48,8 @@ mutate_well_to_row_col_indices <- function(object) {
     )
 
     object <- dplyr::mutate(object,
-        row = factor(as.character(stringr::str_split_fixed("well", "", 2)[, 1])),
-        col = factor(as.numeric(stringr::str_split_fixed("well", "", 2)[, 2]))
+        row = factor(as.character(stringr::str_split_fixed(well, "", 2)[, 1])),
+        col = factor(as.numeric(stringr::str_split_fixed(well, "", 2)[, 2]))
     )
 
     return(object)
@@ -86,8 +86,8 @@ detect_plate_type <- function(object, plate_types = data.frame(
     names(ptype) <- unique(object$plate)
     pt <- plate_types
     pt <- dplyr::mutate(pt,
-        row = as.character(stringr::str_split_fixed("last_well", "", 2)[, 1]),
-        col = as.numeric(stringr::str_split_fixed("last_well", "", 2)[, 2])
+        row = as.character(stringr::str_split_fixed(last_well, "", 2)[, 1]),
+        col = as.numeric(stringr::str_split_fixed(last_well, "", 2)[, 2])
     )
 
     for (i in unique(object$plate)) {
@@ -139,7 +139,11 @@ detect_largest_plate_type <- function(object) {
 dummyPlate <- function(type = NULL, # nolint: object_name_linter.
                        last_well = NULL,
                        plate_name = "dummy",
-                       separator = "_") {
+                       separator = "_",
+                       plate_types = data.frame(
+                           type = as.character(c("6-well", "12-well", "24-well", "48-well", "96-well", "384-well")),
+                           last_well = as.character(c("B3", "C4", "D6", "F8", "H12", "P24"))
+                       )) {
     # Check for type
     if (!is.null(type)) {
         if (!is.null(last_well)) {

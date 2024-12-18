@@ -167,7 +167,7 @@ import_elecsys <- function(file_path = NULL,
 
     # Add custom row.names
     object[[".index"]] <- object[[plate_well]]
-    object <- dplyr::mutate(dplyr::group_by(object, ".index"), measurement_number = seq_along(length(".index")))
+    object <- dplyr::mutate(dplyr::group_by(object, .index), measurement_number = seq_along(length(.index)))
     object[[".index"]] <- NULL
     object[["measurement"]] <- paste0(object[[plate_well]], "_", object[["measurement_number"]])
 
