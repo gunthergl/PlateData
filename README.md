@@ -27,3 +27,18 @@ remotes::install_github("OliverDietrich/microtiter-plate-analysis-toolkit@develo
   - [ ] Tekan Spark
 - [ ] Write tutorial for simple timecourse experiment (design + analysis)
 - [ ] Create development branch to stabilize main
+
+
+## Working on it, GG
+```r
+gitcreds::gitcreds_set() # Then enter the freshly generated token
+dir.create("/home/gugl/clonedgit/others/PlateData")
+usethis::create_from_github(
+    repo="OliverDietrich/PlateData", 
+    fork = TRUE, 
+    destdir = "/home/gugl/clonedgit/others/PlateData"
+)
+
+usethis::use_tidy_github()
+
+```
