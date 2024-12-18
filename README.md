@@ -40,5 +40,13 @@ usethis::create_from_github(
 )
 
 usethis::use_tidy_github()
+usethis::use_tidy_github_actions()
+# Which repo should we target? 
+# 1: gunthergl/PlateData = 'origin'
+# 2: OliverDietrich/PlateData = 'upstream'
+# Selection: 1
+usethis::use_github_action("check-standard")
+usethis::use_tidy_github_labels()
+usethis::use_pkgdown_github_pages()
 
 ```
